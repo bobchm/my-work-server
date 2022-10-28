@@ -75,7 +75,7 @@ taskRoutes.route("/task").get(function (req, res) {
 
     // is the database ready??
     if (!db_connect) {
-        response.status(503).json({ message: "Error - Mongo not ready" });
+        res.status(503).json({ message: "Error - Mongo not ready" });
         console.log("Mongo not ready");
         return;
     }
@@ -96,7 +96,7 @@ taskRoutes.route("/task/:id").get(function (req, res) {
 
     // is the database ready??
     if (!db_connect) {
-        response.status(503).json({ message: "Error - Mongo not ready" });
+        res.status(503).json({ message: "Error - Mongo not ready" });
         console.log("Mongo not ready");
         return;
     }
@@ -109,12 +109,12 @@ taskRoutes.route("/task/:id").get(function (req, res) {
 });
 
 // This section will help you create a new record.
-taskRoutes.route("/task/add").post(function (req, response) {
+taskRoutes.route("/task/add").post(function (req, res) {
     let db_connect = dbo.getDb();
 
     // is the database ready??
     if (!db_connect) {
-        response.status(503).json({ message: "Error - Mongo not ready" });
+        res.status(503).json({ message: "Error - Mongo not ready" });
         console.log("Mongo not ready");
         return;
     }
@@ -127,20 +127,20 @@ taskRoutes.route("/task/add").post(function (req, response) {
         recurrence: req.body.recurrence,
         completed: req.body.completed,
     };
-    db_connect.collection("tasks").insertOne(myobj, function (err, res) {
+    db_connect.collection("tasks").insertOne(myobj, function (err, result) {
         if (err) throw err;
         addTaskList(req.body.taskList);
-        response.json(res);
+        res.json(result);
     });
 });
 
 // This section will help you update a record by id.
-taskRoutes.route("/update/:id").post(function (req, response) {
+taskRoutes.route("/update/:id").post(function (req, res) {
     let db_connect = dbo.getDb();
 
     // is the database ready??
     if (!db_connect) {
-        response.status(503).json({ message: "Error - Mongo not ready" });
+        res.status(503).json({ message: "Error - Mongo not ready" });
         console.log("Mongo not ready");
         return;
     }
@@ -160,31 +160,31 @@ taskRoutes.route("/update/:id").post(function (req, response) {
     db_connect.collection("tasks").findOne(myquery, function (err, result) {
         if (err) throw err;
         if (!result) {
-            response.json(result);
+            res.json(result);
             return;
         }
 
         var prevTaskList = result.taskList;
         db_connect
             .collection("tasks")
-            .updateOne(myquery, newvalues, function (err, res) {
+            .updateOne(myquery, newvalues, function (err, result) {
                 if (err) throw err;
                 if (prevTaskList !== req.body.taskList) {
                     maybeRemoveTaskList(prevTaskList);
                     addTaskList(req.body.taskList);
                 }
-                response.json(res);
+                res.json(result);
             });
     });
 });
 
 // This section will help you delete a record
-taskRoutes.route("/:id").delete((req, response) => {
+taskRoutes.route("/:id").delete((req, res) => {
     let db_connect = dbo.getDb();
 
     // is the database ready??
     if (!db_connect) {
-        response.status(503).json({ message: "Error - Mongo not ready" });
+        res.status(503).json({ message: "Error - Mongo not ready" });
         console.log("Mongo not ready");
         return;
     }
@@ -195,14 +195,14 @@ taskRoutes.route("/:id").delete((req, response) => {
     db_connect.collection("tasks").findOne(myquery, function (err, result) {
         if (err) throw err;
         if (!result) {
-            response.json(result);
+            res.json(result);
             return;
         }
 
         var prevTaskList = result.taskList;
         db_connect.collection("tasks").deleteOne(myquery, function (err, obj) {
             if (err) throw err;
-            response.json(obj);
+            res.json(obj);
             maybeRemoveTaskList(prevTaskList);
         });
     });
@@ -214,7 +214,7 @@ taskRoutes.route("/taskLists").get(function (req, res) {
 
     // is the database ready??
     if (!db_connect) {
-        response.status(503).json({ message: "Error - Mongo not ready" });
+        res.status(503).json({ message: "Error - Mongo not ready" });
         console.log("Mongo not ready");
         return;
     }
@@ -234,13 +234,6 @@ taskRoutes.route("/taskLists").get(function (req, res) {
 function addTaskList(list) {
     if (!list || list.length <= 0) return;
     let db_connect = dbo.getDb();
-
-    // is the database ready??
-    if (!db_connect) {
-        response.status(503).json({ message: "Error - Mongo not ready" });
-        console.log("Mongo not ready");
-        return;
-    }
 
     db_connect
         .collection("tasks")
@@ -282,13 +275,6 @@ function addTaskList(list) {
 function maybeRemoveTaskList(list) {
     let db_connect = dbo.getDb();
 
-    // is the database ready??
-    if (!db_connect) {
-        response.status(503).json({ message: "Error - Mongo not ready" });
-        console.log("Mongo not ready");
-        return;
-    }
-
     let myquery = { taskList: list };
     db_connect.collection("tasks").findOne(myquery, function (err, result) {
         if (err) throw err;
@@ -302,13 +288,6 @@ function maybeRemoveTaskList(list) {
 function deleteTaskList(list) {
     if (!list || list.length <= 0) return;
     let db_connect = dbo.getDb();
-
-    // is the database ready??
-    if (!db_connect) {
-        response.status(503).json({ message: "Error - Mongo not ready" });
-        console.log("Mongo not ready");
-        return;
-    }
 
     db_connect
         .collection("tasks")
