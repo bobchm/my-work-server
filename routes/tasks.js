@@ -215,7 +215,7 @@ taskRoutes.route("/taskLists").get(function (req, res) {
     // is the database ready??
     if (!db_connect) {
         res.status(503).json({ message: "Error - Mongo not ready" });
-        console.log("Mongo not ready");
+        console.log("Mongo is not ready");
         return;
     }
 
